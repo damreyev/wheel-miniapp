@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Options Scanner</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg:           var(--tg-theme-bg-color,           #1c1c1e);
+            --text:         var(--tg-theme-text-color,         #ffffff);
+            --hint:         var(--tg-theme-hint-color,         #8e8e93);
+            --btn:          var(--tg-theme-button-color,       #2481cc);
+            --btn-text:     var(--tg-theme-button-text-color,  #ffffff);
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #2c2c2e);
+            --sep:          rgba(255,255,255,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 16px 16px 24px;
+            min-height: 100vh;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 20px;
+        }
+
+        /* ── Section ── */
+        .section { margin-bottom: 20px; }
+
+        .section-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--hint);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        /* ── Toggle SHORT / MID ── */
+        .toggle-group {
+            display: flex;
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 3px;
+            gap: 3px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 9px 8px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            background: transparent;
+            color: var(--hint);
+            transition: background 0.18s, color 0.18s;
+        }
+
+        .toggle-btn.active {
+            background: var(--btn);
+            color: var(--btn-text);
+        }
+
+        /* ── Grid buttons ── */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .chip {
+            padding: 11px 8px;
+            border: 2px solid var(--secondary-bg);
+            border-radius: 12px;
+            background: var(--secondary-bg);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            transition: border-color 0.15s, background 0.15s, color 0.15s;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .chip.active {
+            border-color: var(--btn);
+            background: var(--btn);
+            color: var(--btn-text);
+        }
+
+        .chip:disabled,
+        .chip[data-disabled] {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        /* ── Date chips ── */
+        .date-chip {
+            padding: 10px 8px;
+        }
+
+        .date-chip .date-day {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .date-chip .date-sub {
+            font-size: 11px;
+            color: var(--hint);
+            margin-top: 2px;
+        }
+
+        .date-chip.active .date-sub {
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* ── Placeholder ── */
+        .placeholder {
+            font-size: 13px;
+            color: var(--hint);
+            padding: 12px 4px;
+            text-align: center;
+        }
+
+        /* ── Scan button ── */
+        #scan-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--btn);
+            color: var(--btn-text);
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: opacity 0.15s;
+        }
+
+        #scan-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* ── Summary bar ── */
+        #summary {
+            font-size: 13px;
+            color: var(--hint);
+            margin-bottom: 12px;
+            min-height: 18px;
+            padding-left: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>⚙️ Параметры сканирования</h2>
+
+<!-- Term -->
+<div class="section">
+    <div class="section-label">Тип стратегии</div>
+    <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-short" onclick="setTerm('SHORT')">📅 Short Term</button>
+        <button class="toggle-btn"        id="btn-mid"   onclick="setTerm('MID')">📆 Mid Term</button>
+    </div>
+</div>
+
+<!-- Min DTE -->
+<div class="section">
+    <div class="section-label">Минимальное DTE</div>
+    <div id="min-grid" class="grid"></div>
+</div>
+
+<!-- Max DTE -->
+<div class="section">
+    <div class="section-label">Максимальное DTE</div>
+    <div id="max-grid" class="grid"></div>
+</div>
+
+<!-- Expiration dates -->
+<div class="section">
+    <div class="section-label">Дата экспирации</div>
+    <div id="dates-grid" class="grid"></div>
+</div>
+
+<!-- Summary + Scan -->
+<div id="summary"></div>
+<button id="scan-btn" onclick="startScan()" disabled>🔍 Запустить сканирование</button>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+// ── Options ────────────────────────────────────────────────────────────────
+const SHORT_MIN = [3, 5, 7, 10];
+const SHORT_MAX = [5, 7, 10, 14];
+const MID_MIN   = [14, 21, 30, 45];
+const MID_MAX   = [21, 30, 45, 60];
+
+const MONTHS = ['', 'янв', 'фев', 'мар', 'апр', 'май', 'июн',
+                    'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+const WDAYS  = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+
+// ── State ──────────────────────────────────────────────────────────────────
+let s = { term: 'SHORT', min_dte: null, max_dte: null, date: null };
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function dteLabel(n) {
+    if (n >= 11 && n <= 14) return `${n} дней`;
+    const r = n % 10;
+    if (r === 1) return `${n} день`;
+    if (r >= 2 && r <= 4) return `${n} дня`;
+    return `${n} дней`;
+}
+
+function getFridays(minDte, maxDte) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const cur   = new Date(today); cur.setDate(today.getDate() + minDte);
+    const end   = new Date(today); end.setDate(today.getDate() + maxDte);
+    while (cur.getDay() !== 5) cur.setDate(cur.getDate() + 1);
+    const result = [];
+    while (cur <= end) { result.push(new Date(cur)); cur.setDate(cur.getDate() + 7); }
+    return result;
+}
+
+function isoDate(d) {
+    return d.toISOString().split('T')[0];
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function setTerm(term) {
+    s = { term, min_dte: null, max_dte: null, date: null };
+    document.getElementById('btn-short').classList.toggle('active', term === 'SHORT');
+    document.getElementById('btn-mid').classList.toggle('active',   term === 'MID');
+    render();
+}
+
+function render() {
+    renderMin();
+    renderMax();
+    renderDates();
+    renderSummary();
+    document.getElementById('scan-btn').disabled = !s.date;
+}
+
+function renderMin() {
+    const opts = s.term === 'SHORT' ? SHORT_MIN : MID_MIN;
+    document.getElementById('min-grid').innerHTML = opts.map(v =>
+        `<button class="chip${s.min_dte === v ? ' active' : ''}"
+                 onclick="pick('min_dte',${v})">${dteLabel(v)}</button>`
+    ).join('');
+}
+
+function renderMax() {
+    if (s.min_dte === null) {
+        document.getElementById('max-grid').innerHTML =
+            '<div class="placeholder" style="grid-column:span 2">Сначала выберите мин. DTE</div>';
+        return;
+    }
+    const opts = (s.term === 'SHORT' ? SHORT_MAX : MID_MAX).filter(v => v > s.min_dte);
+    if (!opts.length) {
+        document.getElementById('max-grid').innerHTML =
+            '<div class="placeholder" style="grid-column:span 2">Нет вариантов — увеличьте мин. DTE</div>';
+        return;
+    }
+    document.getElementById('max-grid').innerHTML = opts.map(v =>
+        `<button class="chip${s.max_dte === v ? ' active' : ''}"
+                 onclick="pick('max_dte',${v})">${dteLabel(v)}</button>`
+    ).join('');
+}
+
+function renderDates() {
+    if (!s.max_dte) {
+        document.getElementById('dates-grid').innerHTML =
+            '<div class="placeholder" style="grid-column:span 2">Сначала выберите макс. DTE</div>';
+        return;
+    }
+    const fridays = getFridays(s.min_dte, s.max_dte);
+    if (!fridays.length) {
+        document.getElementById('dates-grid').innerHTML =
+            '<div class="placeholder" style="grid-column:span 2">Нет пятниц в диапазоне</div>';
+        return;
+    }
+    document.getElementById('dates-grid').innerHTML = fridays.map(d => {
+        const iso  = isoDate(d);
+        const day  = WDAYS[d.getDay()];
+        const label = `${d.getDate()} ${MONTHS[d.getMonth()+1]}`;
+        const dte   = Math.round((d - new Date().setHours(0,0,0,0)) / 86400000);
+        return `
+            <button class="chip date-chip${s.date === iso ? ' active' : ''}"
+                    onclick="pick('date','${iso}')">
+                <div class="date-day">${label}</div>
+                <div class="date-sub">${day} · ${dte} дн.</div>
+            </button>`;
+    }).join('');
+}
+
+function renderSummary() {
+    if (!s.date) { document.getElementById('summary').textContent = ''; return; }
+    const termLabel = s.term === 'SHORT' ? 'Short Term' : 'Mid Term';
+    document.getElementById('summary').textContent =
+        `${termLabel} · DTE ${s.min_dte}–${s.max_dte} · Экспирация ${s.date}`;
+}
+
+// ── Pick ───────────────────────────────────────────────────────────────────
+function pick(field, val) {
+    if (field === 'min_dte') {
+        s.min_dte = val;
+        s.max_dte = null;
+        s.date    = null;
+    } else if (field === 'max_dte') {
+        s.max_dte = val;
+        s.date    = null;
+    } else {
+        s.date = val;
+    }
+    render();
+}
+
+// ── Send to bot ────────────────────────────────────────────────────────────
+function startScan() {
+    if (!s.date) return;
+    const payload = JSON.stringify({
+        term:        s.term,
+        min_dte:     s.min_dte,
+        max_dte:     s.max_dte,
+        target_date: s.date
+    });
+    if (tg) {
+        tg.sendData(payload);
+    } else {
+        // fallback для тестирования в браузере
+        alert('Данные: ' + payload);
+    }
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
