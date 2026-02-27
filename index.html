@@ -124,13 +124,6 @@ body {
 .dp.d2 { border-color: rgba(50,217,168,.45);  background: rgba(50,217,168,.12);  } .dp.d2 .dp-v { color: var(--cyan); }
 .dp.d3 { border-color: rgba(255,69,58,.45);   background: rgba(255,69,58,.12);   } .dp.d3 .dp-v { color: var(--red); }
 
-/* sort row */
-.sort-row { margin: 0 14px 10px; background: var(--bg2); border-radius: 13px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
-.sort-l { font-size: 11px; color: var(--hint); font-weight: 500; }
-.sopts { display: flex; gap: 4px; }
-.sopt { padding: 5px 9px; border-radius: 9px; font-size: 10px; font-weight: 600; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.09); color: var(--hint); cursor: pointer; }
-.sopt.on { background: rgba(50,217,168,.18); border-color: var(--cyan); color: var(--cyan); }
-
 /* scan button */
 .scan-btn { margin: 0 14px 20px; background: var(--blue); border-radius: 14px; padding: 15px; text-align: center; font-size: 16px; font-weight: 700; cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: -.1px; }
 .scan-btn.disabled { opacity: .4; pointer-events: none; }
@@ -238,14 +231,27 @@ body {
 <div class="block" style="padding: 11px 12px">
   <div class="block-hd" style="margin-bottom: 9px">
     <div class="block-t" style="font-size: 12px">Экспирация · DTE</div>
-    <span class="badge badge-b" id="dte-badge">5 → 14</span>
+    <span class="badge badge-b" id="dte-badge">5 → 7</span>
+  </div>
+  <div class="sec-lbl" style="margin-bottom: 5px">Пресет</div>
+  <div class="delta-row" style="margin-bottom: 10px">
+    <div class="dp d1" id="preset-short" onclick="setDtePreset('short')" style="flex:1">
+      <div class="dp-v">SHORT</div>
+      <div class="dp-l">5–7 DTE</div>
+      <div class="dp-s">Краткосроч.</div>
+    </div>
+    <div class="dp d2" id="preset-mid" onclick="setDtePreset('mid')" style="flex:1">
+      <div class="dp-v">MID</div>
+      <div class="dp-l">15–45 DTE</div>
+      <div class="dp-s">Среднесроч.</div>
+    </div>
   </div>
   <div class="sec-lbl" style="margin-bottom: 5px">Мин. DTE</div>
   <div class="chip-grid" id="min-dte-row" style="margin-bottom: 9px; gap: 5px">
     <div class="chip" data-v="3"   onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">3</div>
     <div class="chip on-b" data-v="5"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">5</div>
     <div class="chip" data-v="7"   onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">7</div>
-    <div class="chip" data-v="14"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">14</div>
+    <div class="chip" data-v="15"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">15</div>
     <div class="chip" data-v="30"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">30</div>
     <div class="chip" data-v="45"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">45</div>
     <div class="chip" data-v="60"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">60</div>
@@ -255,9 +261,9 @@ body {
   <div class="chip-grid" id="max-dte-row" style="gap: 5px">
     <div class="chip" data-v="7"   onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">7</div>
     <div class="chip" data-v="10"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">10</div>
-    <div class="chip on-b" data-v="14" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">14</div>
+    <div class="chip" data-v="14"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">14</div>
     <div class="chip" data-v="30"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">30</div>
-    <div class="chip" data-v="60"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">60</div>
+    <div class="chip on-b" data-v="45"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">45</div>
     <div class="chip" data-v="90"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">90</div>
     <div class="chip" data-v="120" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">120</div>
     <div class="chip" data-v="150" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">150</div>
@@ -293,17 +299,6 @@ body {
   </div>
 </div>
 
-<!-- Сортировка -->
-<div class="sort-row">
-  <div class="sort-l">Сортировка</div>
-  <div class="sopts">
-    <div class="sopt on" data-s="premium_pct" onclick="setSort(this)">Премия %</div>
-    <div class="sopt" data-s="otm_pct"     onclick="setSort(this)">OTM %</div>
-    <div class="sopt" data-s="iv"           onclick="setSort(this)">IV</div>
-    <div class="sopt" data-s="symbol"       onclick="setSort(this)">A→Z</div>
-  </div>
-</div>
-
 <div class="scan-btn" id="scan-btn" onclick="startScan()">🔍 Запустить сканирование</div>
 
 <script>
@@ -325,10 +320,9 @@ const S = {
   priceMin: 20,
   priceMax: 300,
   minDte: 5,
-  maxDte: 14,
+  maxDte: 7,
   selectedExpirations: [],
   deltaPresets: ['low', 'mid', 'high'],
-  sortBy: 'premium_pct',
 };
 
 const IDX_SIZES = { sp500: 500, nasdaq100: 101, dow30: 30, russell2000: 1000 };
@@ -411,6 +405,22 @@ function setPrice(btn) {
 
 function resetPrice() {
   setPrice(document.querySelectorAll('.price-preset')[1]);
+}
+
+// ═══════════════════════════════════════════════════════
+// DTE PRESETS (SHORT / MID matching config.py)
+// ═══════════════════════════════════════════════════════
+function setDtePreset(preset) {
+  const presets = { short: { min: 5, max: 7 }, mid: { min: 15, max: 45 } };
+  const p = presets[preset];
+  S.minDte = p.min;
+  S.maxDte = p.max;
+  document.querySelectorAll('#min-dte-row .chip').forEach(b =>
+    b.classList.toggle('on-b', parseInt(b.dataset.v) === p.min));
+  document.querySelectorAll('#max-dte-row .chip').forEach(b =>
+    b.classList.toggle('on-b', parseInt(b.dataset.v) === p.max));
+  document.getElementById('dte-badge').textContent = S.minDte + ' → ' + S.maxDte;
+  updateExpDates();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -508,15 +518,6 @@ function selectAllDelta() {
 }
 
 // ═══════════════════════════════════════════════════════
-// SORT
-// ═══════════════════════════════════════════════════════
-function setSort(btn) {
-  document.querySelectorAll('.sopt').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  S.sortBy = btn.dataset.s;
-}
-
-// ═══════════════════════════════════════════════════════
 // SCAN — отправляем v7 payload боту
 // ═══════════════════════════════════════════════════════
 function startScan() {
@@ -535,7 +536,6 @@ function startScan() {
     price_max:     S.priceMax >= 9000 ? 99999 : S.priceMax,
     dte:           { min: S.minDte, max: S.maxDte },
     delta_presets: S.deltaPresets.length ? S.deltaPresets : ['mid'],
-    sort_by:       S.sortBy,
   };
   if (S.selectedExpirations.length > 0) {
     payload.expiration_dates = [...S.selectedExpirations];
@@ -553,7 +553,7 @@ document.querySelectorAll('.dp').forEach(dp => {
   if (cls) dp.classList.add(cls);
 });
 updateIdxHint();
-updateExpDates();
+setDtePreset('short'); // дефолт = SHORT Term (5–7 DTE, как в config.py)
 </script>
 </body>
 </html>
