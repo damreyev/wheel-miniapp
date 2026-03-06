@@ -1,559 +1,945 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Wheel Options Scanner</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Wheel Options Scanner</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-:root {
-  --bg:    #1c1c1e;
-  --bg2:   #2c2c2e;
-  --bg3:   #3a3a3c;
-  --sep:   rgba(255,255,255,0.08);
-  --text:  #ffffff;
-  --hint:  #8e8e93;
-  --mono:  'SF Mono', 'Fira Code', monospace;
-  --cyan:   #32d9a8;
-  --blue:   #2481cc;
-  --red:    #ff453a;
-  --green:  #30d158;
-  --gold:   #ffd60a;
-  --purple: #bf5af2;
-  --orange: #ff9f0a;
-}
+    :root {
+      --bg: #1c1c1e;
+      --bg2: #2c2c2e;
+      --bg3: #3a3a3c;
+      --sep: rgba(255, 255, 255, 0.08);
+      --text: #ffffff;
+      --hint: #8e8e93;
+      --mono: 'SF Mono', 'Fira Code', monospace;
+      --cyan: #32d9a8;
+      --blue: #2481cc;
+      --red: #ff453a;
+      --green: #30d158;
+      --gold: #ffd60a;
+      --purple: #bf5af2;
+      --orange: #ff9f0a;
+    }
 
-html { background: #111113; }
-body {
-  font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
-  background: #111113;
-  color: var(--text);
-  padding-bottom: max(28px, env(safe-area-inset-bottom));
-  overflow-x: hidden;
-}
+    html {
+      background: #111113;
+    }
 
-/* nav */
-.nav { padding: 14px 16px 8px; display: flex; align-items: center; justify-content: space-between; }
-.nav-t { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+    body {
+      font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, sans-serif;
+      background: #111113;
+      color: var(--text);
+      padding-bottom: max(28px, env(safe-area-inset-bottom));
+      overflow-x: hidden;
+    }
 
-/* section label */
-.sec-lbl { font-size: 11px; font-weight: 600; color: var(--hint); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 7px; }
+    /* nav */
+    .nav {
+      padding: 14px 16px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-/* block card */
-.block { background: var(--bg2); border-radius: 16px; padding: 14px; margin: 0 14px 10px; }
-.block-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.block-t { font-size: 15px; font-weight: 700; }
-.block-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; background: rgba(36,129,204,.2); color: #5ac8fa; }
+    .nav-t {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
 
-/* strategy chips */
-.strat-row { display: flex; gap: 8px; margin: 0 14px 10px; }
-.strat-chip {
-  flex: 1; border-radius: 14px; padding: 12px 8px;
-  background: var(--bg2); border: 1.5px solid rgba(255,255,255,.09);
-  display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 8px;
-  cursor: pointer; position: relative;
-}
-.strat-ck {
-  width: 15px; height: 15px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 8px; font-weight: 800; flex-shrink: 0;
-  border: 1.5px solid rgba(255,255,255,.15);
-}
-.strat-chip-i { font-size: 18px; line-height: 1; }
-.strat-chip-n { font-size: 12px; font-weight: 700; color: var(--hint); }
-.strat-chip-s { font-size: 9px; color: rgba(255,255,255,.25); }
-.strat-chip.s-put  { border-color: rgba(255,69,58,.4);  background: rgba(255,69,58,.1);  }
-.strat-chip.s-put  .strat-chip-n { color: var(--red); }
-.strat-chip.s-put  .strat-ck     { background: var(--red);  color: #fff; border-color: transparent; }
-.strat-chip.s-call { border-color: rgba(50,217,168,.4); background: rgba(50,217,168,.1); }
-.strat-chip.s-call .strat-chip-n { color: var(--cyan); }
-.strat-chip.s-call .strat-ck     { background: var(--cyan); color: #001; border-color: transparent; }
+    /* section label */
+    .sec-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--hint);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 7px;
+    }
 
-/* index filter */
-.idx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.idx-chip { border-radius: 12px; padding: 10px 11px; background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.09); cursor: pointer; display: flex; align-items: center; gap: 9px; }
-.idx-chip.on { border-color: var(--cyan); background: rgba(50,217,168,.12); }
-.idx-chk { width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; flex-shrink: 0; }
-.idx-chip.on .idx-chk { background: var(--cyan); border-color: var(--cyan); color: #001; }
-.idx-nm  { font-size: 12px; font-weight: 700; }
-.idx-chip.on .idx-nm { color: var(--cyan); }
-.idx-ct  { font-size: 10px; color: var(--hint); margin-top: 1px; }
-.idx-chip.on .idx-ct { color: rgba(50,217,168,.6); }
-.idx-total { margin-top: 8px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); border-radius: 11px; padding: 9px 12px; display: flex; align-items: center; justify-content: space-between; }
-.idx-total-l { font-size: 11px; color: var(--hint); }
-.idx-total-r { font-size: 12px; font-weight: 700; color: var(--cyan); font-family: var(--mono); }
+    /* block card */
+    .block {
+      background: var(--bg2);
+      border-radius: 16px;
+      padding: 14px;
+      margin: 0 14px 10px;
+    }
 
-/* price range */
-.prange { display: flex; gap: 8px; align-items: flex-end; }
-.pf { flex: 1; background: rgba(255,255,255,.07); border: 1.5px solid rgba(255,255,255,.12); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
-.pf-val { font-size: 17px; font-weight: 700; font-family: var(--mono); }
-.pf-lbl { font-size: 10px; color: var(--hint); margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
-.pf-arrows { display: flex; flex-direction: column; gap: 2px; }
-.pf-arr { width: 18px; height: 16px; border-radius: 5px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-size: 8px; color: rgba(255,255,255,.6); cursor: pointer; }
-.pf-sep { color: var(--hint); font-size: 16px; padding-bottom: 10px; }
-.price-presets { display: flex; gap: 5px; margin-top: 8px; }
-.price-preset { flex: 1; padding: 7px 4px; border-radius: 10px; background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.09); text-align: center; font-size: 11px; font-weight: 600; color: var(--hint); cursor: pointer; transition: all .15s; }
-.price-preset.on { background: rgba(50,217,168,.18); border-color: var(--cyan); color: var(--cyan); }
+    .block-hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
 
-/* chip grid */
-.chip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.chip {
-  padding: 9px 4px; border: 1.5px solid rgba(255,255,255,.09);
-  border-radius: 11px; background: rgba(255,255,255,.05);
-  font-size: 13px; font-weight: 500; color: var(--text);
-  text-align: center; cursor: pointer; line-height: 1.3;
-  transition: border-color .15s, background .15s;
-}
-.chip.on-b { border-color: var(--blue);  background: rgba(36,129,204,.18); color: #5ac8fa; }
+    .block-t {
+      font-size: 15px;
+      font-weight: 700;
+    }
 
-/* expiration date chips */
-.exp-chip { padding: 7px 8px; border: 1.5px solid rgba(255,255,255,.09); border-radius: 11px; background: rgba(255,255,255,.05); text-align: center; cursor: pointer; transition: border-color .15s, background .15s; color: var(--text); min-width: 52px; }
-.exp-chip.exp-monthly { border-color: rgba(255,214,10,.25); color: rgba(255,214,10,.7); }
-.exp-chip.on-b { border-color: var(--blue);  background: rgba(36,129,204,.18); color: #5ac8fa; }
-.exp-chip.on-g { border-color: var(--gold);  background: rgba(255,214,10,.15); color: var(--gold); }
+    .block-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background: rgba(36, 129, 204, .2);
+      color: #5ac8fa;
+    }
 
-/* delta presets */
-.delta-row { display: flex; gap: 6px; }
-.dp { flex: 1; border-radius: 12px; padding: 11px 5px; background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.09); text-align: center; cursor: pointer; }
-.dp-v { font-size: 11px; font-weight: 700; font-family: var(--mono); }
-.dp-l { font-size: 9px; color: var(--hint); margin-top: 3px; font-weight: 600; }
-.dp-s { font-size: 9px; color: rgba(255,255,255,.2); margin-top: 1px; }
-.dp.d1 { border-color: rgba(36,129,204,.45);  background: rgba(36,129,204,.12);  } .dp.d1 .dp-v { color: #5ac8fa; }
-.dp.d2 { border-color: rgba(50,217,168,.45);  background: rgba(50,217,168,.12);  } .dp.d2 .dp-v { color: var(--cyan); }
-.dp.d3 { border-color: rgba(255,69,58,.45);   background: rgba(255,69,58,.12);   } .dp.d3 .dp-v { color: var(--red); }
+    /* strategy chips */
+    .strat-row {
+      display: flex;
+      gap: 8px;
+      margin: 0 14px 10px;
+    }
 
-/* scan button */
-.scan-btn { margin: 0 14px 20px; background: var(--blue); border-radius: 14px; padding: 15px; text-align: center; font-size: 16px; font-weight: 700; cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: -.1px; }
-.scan-btn.disabled { opacity: .4; pointer-events: none; }
+    .strat-chip {
+      flex: 1;
+      border-radius: 14px;
+      padding: 12px 8px;
+      background: var(--bg2);
+      border: 1.5px solid rgba(255, 255, 255, .09);
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      position: relative;
+    }
 
-/* badge */
-.badge { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px; font-family: var(--mono); background: rgba(255,255,255,.08); color: var(--hint); }
-.badge-b { background: rgba(36,129,204,.2); color: #5ac8fa; }
-</style>
+    .strat-ck {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 800;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(255, 255, 255, .15);
+    }
+
+    .strat-chip-i {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .strat-chip-n {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--hint);
+    }
+
+    .strat-chip-s {
+      font-size: 9px;
+      color: rgba(255, 255, 255, .25);
+    }
+
+    .strat-chip.s-put {
+      border-color: rgba(255, 69, 58, .4);
+      background: rgba(255, 69, 58, .1);
+    }
+
+    .strat-chip.s-put .strat-chip-n {
+      color: var(--red);
+    }
+
+    .strat-chip.s-put .strat-ck {
+      background: var(--red);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .strat-chip.s-call {
+      border-color: rgba(50, 217, 168, .4);
+      background: rgba(50, 217, 168, .1);
+    }
+
+    .strat-chip.s-call .strat-chip-n {
+      color: var(--cyan);
+    }
+
+    .strat-chip.s-call .strat-ck {
+      background: var(--cyan);
+      color: #001;
+      border-color: transparent;
+    }
+
+    /* index filter */
+    .idx-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .idx-chip {
+      border-radius: 12px;
+      padding: 10px 11px;
+      background: rgba(255, 255, 255, .05);
+      border: 1.5px solid rgba(255, 255, 255, .09);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .idx-chip.on {
+      border-color: var(--cyan);
+      background: rgba(50, 217, 168, .12);
+    }
+
+    .idx-chk {
+      width: 16px;
+      height: 16px;
+      border-radius: 5px;
+      border: 1.5px solid rgba(255, 255, 255, .18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .idx-chip.on .idx-chk {
+      background: var(--cyan);
+      border-color: var(--cyan);
+      color: #001;
+    }
+
+    .idx-nm {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .idx-chip.on .idx-nm {
+      color: var(--cyan);
+    }
+
+    .idx-ct {
+      font-size: 10px;
+      color: var(--hint);
+      margin-top: 1px;
+    }
+
+    .idx-chip.on .idx-ct {
+      color: rgba(50, 217, 168, .6);
+    }
+
+    .idx-total {
+      margin-top: 8px;
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid rgba(255, 255, 255, .09);
+      border-radius: 11px;
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .idx-total-l {
+      font-size: 11px;
+      color: var(--hint);
+    }
+
+    .idx-total-r {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cyan);
+      font-family: var(--mono);
+    }
+
+    /* price range */
+    .prange {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .pf {
+      flex: 1;
+      background: rgba(255, 255, 255, .07);
+      border: 1.5px solid rgba(255, 255, 255, .12);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pf-val {
+      font-size: 17px;
+      font-weight: 700;
+      font-family: var(--mono);
+    }
+
+    .pf-lbl {
+      font-size: 10px;
+      color: var(--hint);
+      margin-bottom: 5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .pf-arrows {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .pf-arr {
+      width: 18px;
+      height: 16px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, .1);
+      border: 1px solid rgba(255, 255, 255, .12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: rgba(255, 255, 255, .6);
+      cursor: pointer;
+    }
+
+    .pf-sep {
+      color: var(--hint);
+      font-size: 16px;
+      padding-bottom: 10px;
+    }
+
+    .price-presets {
+      display: flex;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .price-preset {
+      flex: 1;
+      padding: 7px 4px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .05);
+      border: 1.5px solid rgba(255, 255, 255, .09);
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--hint);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .price-preset.on {
+      background: rgba(50, 217, 168, .18);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    /* chip grid */
+    .chip-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .chip {
+      padding: 9px 4px;
+      border: 1.5px solid rgba(255, 255, 255, .09);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, .05);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: center;
+      cursor: pointer;
+      line-height: 1.3;
+      transition: border-color .15s, background .15s;
+    }
+
+    .chip.on-b {
+      border-color: var(--blue);
+      background: rgba(36, 129, 204, .18);
+      color: #5ac8fa;
+    }
+
+    /* expiration date chips */
+    .exp-chip {
+      padding: 7px 8px;
+      border: 1.5px solid rgba(255, 255, 255, .09);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, .05);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      color: var(--text);
+      min-width: 52px;
+    }
+
+    .exp-chip.exp-monthly {
+      border-color: rgba(255, 214, 10, .25);
+      color: rgba(255, 214, 10, .7);
+    }
+
+    .exp-chip.on-b {
+      border-color: var(--blue);
+      background: rgba(36, 129, 204, .18);
+      color: #5ac8fa;
+    }
+
+    .exp-chip.on-g {
+      border-color: var(--gold);
+      background: rgba(255, 214, 10, .15);
+      color: var(--gold);
+    }
+
+    /* delta presets */
+    .delta-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dp {
+      flex: 1;
+      border-radius: 12px;
+      padding: 11px 5px;
+      background: rgba(255, 255, 255, .05);
+      border: 1.5px solid rgba(255, 255, 255, .09);
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .dp-v {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--mono);
+    }
+
+    .dp-l {
+      font-size: 9px;
+      color: var(--hint);
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    .dp-s {
+      font-size: 9px;
+      color: rgba(255, 255, 255, .2);
+      margin-top: 1px;
+    }
+
+    .dp.d1 {
+      border-color: rgba(36, 129, 204, .45);
+      background: rgba(36, 129, 204, .12);
+    }
+
+    .dp.d1 .dp-v {
+      color: #5ac8fa;
+    }
+
+    .dp.d2 {
+      border-color: rgba(50, 217, 168, .45);
+      background: rgba(50, 217, 168, .12);
+    }
+
+    .dp.d2 .dp-v {
+      color: var(--cyan);
+    }
+
+    .dp.d3 {
+      border-color: rgba(255, 69, 58, .45);
+      background: rgba(255, 69, 58, .12);
+    }
+
+    .dp.d3 .dp-v {
+      color: var(--red);
+    }
+
+    /* scan button */
+    .scan-btn {
+      margin: 0 14px 20px;
+      background: var(--blue);
+      border-radius: 14px;
+      padding: 15px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: -.1px;
+    }
+
+    .scan-btn.disabled {
+      opacity: .4;
+      pointer-events: none;
+    }
+
+    /* badge */
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-family: var(--mono);
+      background: rgba(255, 255, 255, .08);
+      color: var(--hint);
+    }
+
+    .badge-b {
+      background: rgba(36, 129, 204, .2);
+      color: #5ac8fa;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="nav">
-  <div class="nav-t">Сканер</div>
-</div>
+  <div class="nav">
+    <div class="nav-t">Сканер</div>
+  </div>
 
-<!-- Стратегия -->
-<div style="padding: 0 14px 6px"><div class="sec-lbl">Стратегия</div></div>
-<div class="strat-row">
-  <div class="strat-chip s-put" id="st-put" onclick="toggleStrat('put')">
-    <div class="strat-ck" id="ck-put">✓</div>
-    <div class="strat-chip-i">📉</div>
-    <div>
-      <div class="strat-chip-n">Sell PUT</div>
-      <div class="strat-chip-s">Cash Secured</div>
-    </div>
+  <!-- Стратегия -->
+  <div style="padding: 0 14px 6px">
+    <div class="sec-lbl">Стратегия</div>
   </div>
-  <div class="strat-chip" id="st-call" onclick="toggleStrat('call')">
-    <div class="strat-ck" id="ck-call"></div>
-    <div class="strat-chip-i">📈</div>
-    <div>
-      <div class="strat-chip-n">Sell CALL</div>
-      <div class="strat-chip-s">Covered Call</div>
-    </div>
-  </div>
-</div>
-
-<!-- Индексы -->
-<div class="block" style="padding: 11px 12px">
-  <div class="block-hd" style="margin-bottom: 9px">
-    <div class="block-t" style="font-size: 12px">Индексы</div>
-    <span style="font-size: 10px; color: #5ac8fa; font-weight: 600; cursor: pointer" onclick="selectAllIdx()">все</span>
-  </div>
-  <div class="idx-grid">
-    <div class="idx-chip on" data-idx="sp500" onclick="toggleIdx(this)">
-      <div class="idx-chk">✓</div>
-      <div><div class="idx-nm">S&amp;P 500</div><div class="idx-ct">~500 тик.</div></div>
-    </div>
-    <div class="idx-chip" data-idx="nasdaq100" onclick="toggleIdx(this)">
-      <div class="idx-chk"></div>
-      <div><div class="idx-nm">NASDAQ 100</div><div class="idx-ct">101 тик.</div></div>
-    </div>
-    <div class="idx-chip" data-idx="dow30" onclick="toggleIdx(this)">
-      <div class="idx-chk"></div>
-      <div><div class="idx-nm">Dow Jones</div><div class="idx-ct">30 тик.</div></div>
-    </div>
-    <div class="idx-chip" data-idx="russell2000" onclick="toggleIdx(this)">
-      <div class="idx-chk"></div>
-      <div><div class="idx-nm">Russell 2000</div><div class="idx-ct">~1000 тик.</div></div>
-    </div>
-  </div>
-  <div class="idx-total">
-    <div class="idx-total-l">Тикеров для сканирования</div>
-    <div class="idx-total-r" id="ticker-count">~500</div>
-  </div>
-</div>
-
-<!-- Цена акции -->
-<div class="block" style="padding: 11px 12px">
-  <div class="block-hd" style="margin-bottom: 9px">
-    <div class="block-t" style="font-size: 12px">Цена акции</div>
-    <span style="font-size: 10px; color: var(--hint); cursor: pointer" onclick="resetPrice()">сбросить</span>
-  </div>
-  <div class="prange">
-    <div style="flex: 1">
-      <div class="pf-lbl">Мин.</div>
-      <div class="pf">
-        <div class="pf-val" id="price-min-lbl">$20</div>
-        <div class="pf-arrows">
-          <div class="pf-arr" onclick="adjPrice('min',1)">▲</div>
-          <div class="pf-arr" onclick="adjPrice('min',-1)">▼</div>
-        </div>
+  <div class="strat-row">
+    <div class="strat-chip s-put" id="st-put" onclick="toggleStrat('put')">
+      <div class="strat-ck" id="ck-put">✓</div>
+      <div class="strat-chip-i">📉</div>
+      <div>
+        <div class="strat-chip-n">Sell PUT</div>
+        <div class="strat-chip-s">Cash Secured</div>
       </div>
     </div>
-    <div class="pf-sep">—</div>
-    <div style="flex: 1">
-      <div class="pf-lbl">Макс.</div>
-      <div class="pf">
-        <div class="pf-val" id="price-max-lbl">$300</div>
-        <div class="pf-arrows">
-          <div class="pf-arr" onclick="adjPrice('max',1)">▲</div>
-          <div class="pf-arr" onclick="adjPrice('max',-1)">▼</div>
-        </div>
+    <div class="strat-chip" id="st-call" onclick="toggleStrat('call')">
+      <div class="strat-ck" id="ck-call"></div>
+      <div class="strat-chip-i">📈</div>
+      <div>
+        <div class="strat-chip-n">Sell CALL</div>
+        <div class="strat-chip-s">Covered Call</div>
       </div>
     </div>
   </div>
-  <div class="price-presets">
-    <div class="price-preset" data-min="10"  data-max="100"  onclick="setPrice(this)">$10–100</div>
-    <div class="price-preset on" data-min="20" data-max="300"  onclick="setPrice(this)">$20–300</div>
-    <div class="price-preset" data-min="50"  data-max="1000" onclick="setPrice(this)">$50–1K</div>
-    <div class="price-preset" data-min="1"   data-max="9999" onclick="setPrice(this)">Любая</div>
-  </div>
-</div>
 
-<!-- DTE -->
-<div class="block" style="padding: 11px 12px">
-  <div class="block-hd" style="margin-bottom: 9px">
-    <div class="block-t" style="font-size: 12px">Экспирация · DTE</div>
-    <span class="badge badge-b" id="dte-badge">5 → 7</span>
-  </div>
-  <div class="sec-lbl" style="margin-bottom: 5px">Пресет</div>
-  <div class="delta-row" style="margin-bottom: 10px">
-    <div class="dp d1" id="preset-short" onclick="setDtePreset('short')" style="flex:1">
-      <div class="dp-v">SHORT</div>
-      <div class="dp-l">5–7 DTE</div>
-      <div class="dp-s">Краткосроч.</div>
+  <!-- Индексы -->
+  <div class="block" style="padding: 11px 12px">
+    <div class="block-hd" style="margin-bottom: 9px">
+      <div class="block-t" style="font-size: 12px">Индексы</div>
+      <span style="font-size: 10px; color: #5ac8fa; font-weight: 600; cursor: pointer"
+        onclick="selectAllIdx()">все</span>
     </div>
-    <div class="dp d2" id="preset-mid" onclick="setDtePreset('mid')" style="flex:1">
-      <div class="dp-v">MID</div>
-      <div class="dp-l">15–45 DTE</div>
-      <div class="dp-s">Среднесроч.</div>
+    <div class="idx-grid">
+      <div class="idx-chip on" data-idx="sp500" onclick="toggleIdx(this)">
+        <div class="idx-chk">✓</div>
+        <div>
+          <div class="idx-nm">S&amp;P 500</div>
+          <div class="idx-ct">~500 тик.</div>
+        </div>
+      </div>
+      <div class="idx-chip" data-idx="nasdaq100" onclick="toggleIdx(this)">
+        <div class="idx-chk"></div>
+        <div>
+          <div class="idx-nm">NASDAQ 100</div>
+          <div class="idx-ct">101 тик.</div>
+        </div>
+      </div>
+      <div class="idx-chip" data-idx="dow30" onclick="toggleIdx(this)">
+        <div class="idx-chk"></div>
+        <div>
+          <div class="idx-nm">Dow Jones</div>
+          <div class="idx-ct">30 тик.</div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="sec-lbl" style="margin-bottom: 5px">Мин. DTE</div>
-  <div class="chip-grid" id="min-dte-row" style="margin-bottom: 9px; gap: 5px">
-    <div class="chip" data-v="3"   onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">3</div>
-    <div class="chip on-b" data-v="5"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">5</div>
-    <div class="chip" data-v="7"   onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">7</div>
-    <div class="chip" data-v="15"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">15</div>
-    <div class="chip" data-v="30"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">30</div>
-    <div class="chip" data-v="45"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">45</div>
-    <div class="chip" data-v="60"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">60</div>
-    <div class="chip" data-v="90"  onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">90</div>
-  </div>
-  <div class="sec-lbl" style="margin-bottom: 5px">Макс. DTE</div>
-  <div class="chip-grid" id="max-dte-row" style="gap: 5px">
-    <div class="chip" data-v="7"   onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">7</div>
-    <div class="chip" data-v="10"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">10</div>
-    <div class="chip" data-v="14"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">14</div>
-    <div class="chip" data-v="30"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">30</div>
-    <div class="chip on-b" data-v="45"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">45</div>
-    <div class="chip" data-v="90"  onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">90</div>
-    <div class="chip" data-v="120" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">120</div>
-    <div class="chip" data-v="150" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">150</div>
-  </div>
-  <div id="exp-dates-wrap" style="display:none; margin-top:10px">
-    <div class="sec-lbl" style="margin-bottom:6px">Дата экспирации <span style="font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--hint)">— уточнить</span></div>
-    <div style="display:flex; gap:5px; flex-wrap:wrap" id="exp-dates-row"></div>
-  </div>
-</div>
-
-<!-- Delta -->
-<div class="block">
-  <div class="block-hd" style="margin-bottom: 10px">
-    <div class="block-t" style="font-size: 12px">Δ Delta</div>
-    <span style="font-size: 10px; color: #5ac8fa; font-weight: 600; cursor: pointer" onclick="selectAllDelta()">все три</span>
-  </div>
-  <div class="delta-row">
-    <div class="dp d1" data-p="low" onclick="toggleDelta(this)">
-      <div class="dp-v">0.05–0.15</div>
-      <div class="dp-l">Очень OTM</div>
-      <div class="dp-s">85–95%</div>
-    </div>
-    <div class="dp d2" data-p="mid" onclick="toggleDelta(this)">
-      <div class="dp-v">0.15–0.25</div>
-      <div class="dp-l">Умеренно</div>
-      <div class="dp-s">75–85%</div>
-    </div>
-    <div class="dp d3" data-p="high" onclick="toggleDelta(this)">
-      <div class="dp-v">0.25–0.40</div>
-      <div class="dp-l">Агрессивно</div>
-      <div class="dp-s">60–75%</div>
+    <div class="idx-total">
+      <div class="idx-total-l">Тикеров для сканирования</div>
+      <div class="idx-total-r" id="ticker-count">~500</div>
     </div>
   </div>
-</div>
 
-<div class="scan-btn" id="scan-btn" onclick="startScan()">🔍 Запустить сканирование</div>
+  <!-- Цена акции -->
+  <div class="block" style="padding: 11px 12px">
+    <div class="block-hd" style="margin-bottom: 9px">
+      <div class="block-t" style="font-size: 12px">Цена акции</div>
+      <span style="font-size: 10px; color: var(--hint); cursor: pointer" onclick="resetPrice()">сбросить</span>
+    </div>
+    <div class="prange">
+      <div style="flex: 1">
+        <div class="pf-lbl">Мин.</div>
+        <div class="pf">
+          <div class="pf-val" id="price-min-lbl">$20</div>
+          <div class="pf-arrows">
+            <div class="pf-arr" onclick="adjPrice('min',1)">▲</div>
+            <div class="pf-arr" onclick="adjPrice('min',-1)">▼</div>
+          </div>
+        </div>
+      </div>
+      <div class="pf-sep">—</div>
+      <div style="flex: 1">
+        <div class="pf-lbl">Макс.</div>
+        <div class="pf">
+          <div class="pf-val" id="price-max-lbl">$300</div>
+          <div class="pf-arrows">
+            <div class="pf-arr" onclick="adjPrice('max',1)">▲</div>
+            <div class="pf-arr" onclick="adjPrice('max',-1)">▼</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="price-presets">
+      <div class="price-preset" data-min="10" data-max="100" onclick="setPrice(this)">$10–100</div>
+      <div class="price-preset on" data-min="20" data-max="300" onclick="setPrice(this)">$20–300</div>
+      <div class="price-preset" data-min="50" data-max="1000" onclick="setPrice(this)">$50–1K</div>
+      <div class="price-preset" data-min="1" data-max="9999" onclick="setPrice(this)">Любая</div>
+    </div>
+  </div>
 
-<script>
-const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-  tg.setHeaderColor('#111113');
-  tg.setBackgroundColor('#111113');
-}
+  <!-- DTE -->
+  <div class="block" style="padding: 11px 12px">
+    <div class="block-hd" style="margin-bottom: 9px">
+      <div class="block-t" style="font-size: 12px">Экспирация · DTE</div>
+      <span class="badge badge-b" id="dte-badge">5 → 7</span>
+    </div>
+    <div class="sec-lbl" style="margin-bottom: 5px">Пресет</div>
+    <div class="delta-row" style="margin-bottom: 10px">
+      <div class="dp d1" id="preset-short" onclick="setDtePreset('short')" style="flex:1">
+        <div class="dp-v">SHORT</div>
+        <div class="dp-l">5–7 DTE</div>
+        <div class="dp-s">Краткосроч.</div>
+      </div>
+      <div class="dp d2" id="preset-mid" onclick="setDtePreset('mid')" style="flex:1">
+        <div class="dp-v">MID</div>
+        <div class="dp-l">15–45 DTE</div>
+        <div class="dp-s">Среднесроч.</div>
+      </div>
+    </div>
+    <div class="sec-lbl" style="margin-bottom: 5px">Мин. DTE</div>
+    <div class="chip-grid" id="min-dte-row" style="margin-bottom: 9px; gap: 5px">
+      <div class="chip" data-v="3" onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">3</div>
+      <div class="chip on-b" data-v="5" onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">5</div>
+      <div class="chip" data-v="7" onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">7</div>
+      <div class="chip" data-v="15" onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">15</div>
+      <div class="chip" data-v="30" onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">30</div>
+      <div class="chip" data-v="45" onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">45</div>
+      <div class="chip" data-v="60" onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">60</div>
+      <div class="chip" data-v="90" onclick="setDte('min',this)" style="font-size:12px;padding:6px 2px">90</div>
+    </div>
+    <div class="sec-lbl" style="margin-bottom: 5px">Макс. DTE</div>
+    <div class="chip-grid" id="max-dte-row" style="gap: 5px">
+      <div class="chip" data-v="7" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">7</div>
+      <div class="chip" data-v="10" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">10</div>
+      <div class="chip" data-v="14" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">14</div>
+      <div class="chip" data-v="30" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">30</div>
+      <div class="chip on-b" data-v="45" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">45</div>
+      <div class="chip" data-v="90" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">90</div>
+      <div class="chip" data-v="120" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">120</div>
+      <div class="chip" data-v="150" onclick="setDte('max',this)" style="font-size:12px;padding:6px 2px">150</div>
+    </div>
+    <div id="exp-dates-wrap" style="display:none; margin-top:10px">
+      <div class="sec-lbl" style="margin-bottom:6px">Дата экспирации <span
+          style="font-size:9px;text-transform:none;letter-spacing:0;font-weight:400;color:var(--hint)">— уточнить</span>
+      </div>
+      <div style="display:flex; gap:5px; flex-wrap:wrap" id="exp-dates-row"></div>
+    </div>
+  </div>
 
-// ═══════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════
-const S = {
-  put: true,
-  call: false,
-  indexFilter: ['sp500'],
-  priceMin: 20,
-  priceMax: 300,
-  minDte: 5,
-  maxDte: 7,
-  selectedExpirations: [],
-  deltaPresets: ['low', 'mid', 'high'],
-};
+  <!-- Delta -->
+  <div class="block">
+    <div class="block-hd" style="margin-bottom: 10px">
+      <div class="block-t" style="font-size: 12px">Δ Delta</div>
+      <span style="font-size: 10px; color: #5ac8fa; font-weight: 600; cursor: pointer" onclick="selectAllDelta()">все
+        три</span>
+    </div>
+    <div class="delta-row">
+      <div class="dp d1" data-p="low" onclick="toggleDelta(this)">
+        <div class="dp-v">0.05–0.15</div>
+        <div class="dp-l">Очень OTM</div>
+        <div class="dp-s">85–95%</div>
+      </div>
+      <div class="dp d2" data-p="mid" onclick="toggleDelta(this)">
+        <div class="dp-v">0.15–0.25</div>
+        <div class="dp-l">Умеренно</div>
+        <div class="dp-s">75–85%</div>
+      </div>
+      <div class="dp d3" data-p="high" onclick="toggleDelta(this)">
+        <div class="dp-v">0.25–0.40</div>
+        <div class="dp-l">Агрессивно</div>
+        <div class="dp-s">60–75%</div>
+      </div>
+    </div>
+  </div>
 
-const IDX_SIZES = { sp500: 500, nasdaq100: 101, dow30: 30, russell2000: 1000 };
-const DELTA_CLASS = { low: 'd1', mid: 'd2', high: 'd3' };
+  <div class="scan-btn" id="scan-btn" onclick="startScan()">🔍 Запустить сканирование</div>
 
-// ═══════════════════════════════════════════════════════
-// STRATEGY
-// ═══════════════════════════════════════════════════════
-function toggleStrat(type) {
-  S[type] = !S[type];
-  const el  = document.getElementById('st-' + type);
-  const ck  = document.getElementById('ck-' + type);
-  const cls = type === 'put' ? 's-put' : 's-call';
-  if (S[type]) { el.classList.add(cls);    if (ck) ck.textContent = '✓'; }
-  else         { el.classList.remove(cls); if (ck) ck.textContent = '';  }
-}
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      tg.setHeaderColor('#111113');
+      tg.setBackgroundColor('#111113');
+    }
 
-// ═══════════════════════════════════════════════════════
-// INDEX FILTER
-// ═══════════════════════════════════════════════════════
-function toggleIdx(btn) {
-  const idx = btn.dataset.idx;
-  btn.classList.toggle('on');
-  const chk = btn.querySelector('.idx-chk');
-  if (btn.classList.contains('on')) {
-    if (chk) chk.textContent = '✓';
-    if (!S.indexFilter.includes(idx)) S.indexFilter.push(idx);
-  } else {
-    if (chk) chk.textContent = '';
-    S.indexFilter = S.indexFilter.filter(i => i !== idx);
-  }
-  updateIdxHint();
-}
+    // ═══════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════
+    const S = {
+      put: true,
+      call: false,
+      indexFilter: ['sp500'],
+      priceMin: 20,
+      priceMax: 300,
+      minDte: 5,
+      maxDte: 7,
+      selectedExpirations: [],
+      deltaPresets: ['low', 'mid', 'high'],
+    };
 
-function selectAllIdx() {
-  document.querySelectorAll('.idx-chip').forEach(btn => {
-    if (!btn.classList.contains('on')) toggleIdx(btn);
-  });
-}
+    const IDX_SIZES = { sp500: 504, nasdaq100: 101, dow30: 30 };
+    const DELTA_CLASS = { low: 'd1', mid: 'd2', high: 'd3' };
 
-function updateIdxHint() {
-  let total = 0;
-  S.indexFilter.forEach(idx => { total += IDX_SIZES[idx] || 0; });
-  if (S.indexFilter.length > 1) total = Math.round(total * 0.8);
-  let text;
-  if (S.indexFilter.includes('russell2000'))  text = '~1000+';
-  else if (total > 400) text = '~' + Math.round(total / 50) * 50;
-  else text = '~' + total;
-  document.getElementById('ticker-count').textContent = text || '0';
-}
+    // ═══════════════════════════════════════════════════════
+    // STRATEGY
+    // ═══════════════════════════════════════════════════════
+    function toggleStrat(type) {
+      S[type] = !S[type];
+      const el = document.getElementById('st-' + type);
+      const ck = document.getElementById('ck-' + type);
+      const cls = type === 'put' ? 's-put' : 's-call';
+      if (S[type]) { el.classList.add(cls); if (ck) ck.textContent = '✓'; }
+      else { el.classList.remove(cls); if (ck) ck.textContent = ''; }
+    }
 
-// ═══════════════════════════════════════════════════════
-// PRICE RANGE
-// ═══════════════════════════════════════════════════════
-const PRICE_STEPS = [1,5,10,20,25,50,100,150,200,250,300,500,750,1000,9999];
+    // ═══════════════════════════════════════════════════════
+    // INDEX FILTER
+    // ═══════════════════════════════════════════════════════
+    function toggleIdx(btn) {
+      const idx = btn.dataset.idx;
+      btn.classList.toggle('on');
+      const chk = btn.querySelector('.idx-chk');
+      if (btn.classList.contains('on')) {
+        if (chk) chk.textContent = '✓';
+        if (!S.indexFilter.includes(idx)) S.indexFilter.push(idx);
+      } else {
+        if (chk) chk.textContent = '';
+        S.indexFilter = S.indexFilter.filter(i => i !== idx);
+      }
+      updateIdxHint();
+    }
 
-function adjPrice(type, dir) {
-  const cur = type === 'min' ? S.priceMin : S.priceMax;
-  let idx = PRICE_STEPS.findIndex(v => v >= cur);
-  if (idx < 0) idx = PRICE_STEPS.length - 1;
-  idx = Math.max(0, Math.min(PRICE_STEPS.length - 1, idx + dir));
-  if (type === 'min') {
-    S.priceMin = PRICE_STEPS[idx];
-    document.getElementById('price-min-lbl').textContent = '$' + S.priceMin;
-  } else {
-    S.priceMax = PRICE_STEPS[idx];
-    document.getElementById('price-max-lbl').textContent = S.priceMax >= 9000 ? 'Любая' : '$' + S.priceMax;
-  }
-  document.querySelectorAll('.price-preset').forEach(b => b.classList.remove('on'));
-}
+    function selectAllIdx() {
+      document.querySelectorAll('.idx-chip').forEach(btn => {
+        if (!btn.classList.contains('on')) toggleIdx(btn);
+      });
+    }
 
-function setPrice(btn) {
-  document.querySelectorAll('.price-preset').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  S.priceMin = parseInt(btn.dataset.min);
-  S.priceMax = parseInt(btn.dataset.max);
-  document.getElementById('price-min-lbl').textContent = '$' + S.priceMin;
-  document.getElementById('price-max-lbl').textContent = S.priceMax >= 9000 ? 'Любая' : '$' + S.priceMax;
-}
+    function updateIdxHint() {
+      let total = 0;
+      S.indexFilter.forEach(idx => { total += IDX_SIZES[idx] || 0; });
+      if (S.indexFilter.length > 1) total = Math.round(total * 0.8);
+      let text;
+      if (total > 400) text = '~' + Math.round(total / 50) * 50;
+      else text = '~' + total;
+      document.getElementById('ticker-count').textContent = text || '0';
+    }
 
-function resetPrice() {
-  setPrice(document.querySelectorAll('.price-preset')[1]);
-}
+    // ═══════════════════════════════════════════════════════
+    // PRICE RANGE
+    // ═══════════════════════════════════════════════════════
+    const PRICE_STEPS = [1, 5, 10, 20, 25, 50, 100, 150, 200, 250, 300, 500, 750, 1000, 9999];
 
-// ═══════════════════════════════════════════════════════
-// DTE PRESETS (SHORT / MID matching config.py)
-// ═══════════════════════════════════════════════════════
-function setDtePreset(preset) {
-  const presets = { short: { min: 5, max: 7 }, mid: { min: 15, max: 45 } };
-  const p = presets[preset];
-  S.minDte = p.min;
-  S.maxDte = p.max;
-  document.querySelectorAll('#min-dte-row .chip').forEach(b =>
-    b.classList.toggle('on-b', parseInt(b.dataset.v) === p.min));
-  document.querySelectorAll('#max-dte-row .chip').forEach(b =>
-    b.classList.toggle('on-b', parseInt(b.dataset.v) === p.max));
-  document.getElementById('dte-badge').textContent = S.minDte + ' → ' + S.maxDte;
-  updateExpDates();
-}
+    function adjPrice(type, dir) {
+      const cur = type === 'min' ? S.priceMin : S.priceMax;
+      let idx = PRICE_STEPS.findIndex(v => v >= cur);
+      if (idx < 0) idx = PRICE_STEPS.length - 1;
+      idx = Math.max(0, Math.min(PRICE_STEPS.length - 1, idx + dir));
+      if (type === 'min') {
+        S.priceMin = PRICE_STEPS[idx];
+        document.getElementById('price-min-lbl').textContent = '$' + S.priceMin;
+      } else {
+        S.priceMax = PRICE_STEPS[idx];
+        document.getElementById('price-max-lbl').textContent = S.priceMax >= 9000 ? 'Любая' : '$' + S.priceMax;
+      }
+      document.querySelectorAll('.price-preset').forEach(b => b.classList.remove('on'));
+    }
 
-// ═══════════════════════════════════════════════════════
-// DTE
-// ═══════════════════════════════════════════════════════
-function setDte(type, btn) {
-  const rowId = type === 'min' ? 'min-dte-row' : 'max-dte-row';
-  document.querySelectorAll(`#${rowId} .chip`).forEach(b => b.classList.remove('on-b'));
-  btn.classList.add('on-b');
-  const v = parseInt(btn.dataset.v);
-  if (type === 'min') S.minDte = v; else S.maxDte = v;
-  document.getElementById('dte-badge').textContent = S.minDte + ' → ' + S.maxDte;
-  updateExpDates();
-}
+    function setPrice(btn) {
+      document.querySelectorAll('.price-preset').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      S.priceMin = parseInt(btn.dataset.min);
+      S.priceMax = parseInt(btn.dataset.max);
+      document.getElementById('price-min-lbl').textContent = '$' + S.priceMin;
+      document.getElementById('price-max-lbl').textContent = S.priceMax >= 9000 ? 'Любая' : '$' + S.priceMax;
+    }
 
-// ═══════════════════════════════════════════════════════
-// EXPIRATION DATE PICKER
-// ═══════════════════════════════════════════════════════
-function isMonthlyExpiration(date) {
-  return date.getDate() >= 15 && date.getDate() <= 21;
-}
+    function resetPrice() {
+      setPrice(document.querySelectorAll('.price-preset')[1]);
+    }
 
-function computeExpirationDates(minDte, maxDte) {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const start = new Date(today); start.setDate(today.getDate() + minDte);
-  const end   = new Date(today); end.setDate(today.getDate() + maxDte);
-  const d = new Date(start);
-  const dw = d.getDay();
-  d.setDate(d.getDate() + (dw <= 5 ? 5 - dw : 6));
-  const dates = [];
-  while (d <= end) {
-    dates.push({
-      date: d.toISOString().slice(0, 10),
-      dte:  Math.round((d - today) / 86400000),
-      isMonthly: isMonthlyExpiration(d),
+    // ═══════════════════════════════════════════════════════
+    // DTE PRESETS (SHORT / MID matching config.py)
+    // ═══════════════════════════════════════════════════════
+    function setDtePreset(preset) {
+      const presets = { short: { min: 5, max: 7 }, mid: { min: 15, max: 45 } };
+      const p = presets[preset];
+      S.minDte = p.min;
+      S.maxDte = p.max;
+      document.querySelectorAll('#min-dte-row .chip').forEach(b =>
+        b.classList.toggle('on-b', parseInt(b.dataset.v) === p.min));
+      document.querySelectorAll('#max-dte-row .chip').forEach(b =>
+        b.classList.toggle('on-b', parseInt(b.dataset.v) === p.max));
+      document.getElementById('dte-badge').textContent = S.minDte + ' → ' + S.maxDte;
+      updateExpDates();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // DTE
+    // ═══════════════════════════════════════════════════════
+    function setDte(type, btn) {
+      const rowId = type === 'min' ? 'min-dte-row' : 'max-dte-row';
+      document.querySelectorAll(`#${rowId} .chip`).forEach(b => b.classList.remove('on-b'));
+      btn.classList.add('on-b');
+      const v = parseInt(btn.dataset.v);
+      if (type === 'min') S.minDte = v; else S.maxDte = v;
+      document.getElementById('dte-badge').textContent = S.minDte + ' → ' + S.maxDte;
+      updateExpDates();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // EXPIRATION DATE PICKER
+    // ═══════════════════════════════════════════════════════
+    function isMonthlyExpiration(date) {
+      return date.getDate() >= 15 && date.getDate() <= 21;
+    }
+
+    function computeExpirationDates(minDte, maxDte) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const start = new Date(today); start.setDate(today.getDate() + minDte);
+      const end = new Date(today); end.setDate(today.getDate() + maxDte);
+      const d = new Date(start);
+      const dw = d.getDay();
+      d.setDate(d.getDate() + (dw <= 5 ? 5 - dw : 6));
+      const dates = [];
+      while (d <= end) {
+        dates.push({
+          date: d.toISOString().slice(0, 10),
+          dte: Math.round((d - today) / 86400000),
+          isMonthly: isMonthlyExpiration(d),
+        });
+        d.setDate(d.getDate() + 7);
+      }
+      return dates;
+    }
+
+    function updateExpDates() {
+      const dates = computeExpirationDates(S.minDte, S.maxDte);
+      const wrap = document.getElementById('exp-dates-wrap');
+      const row = document.getElementById('exp-dates-row');
+      if (!wrap || !row) return;
+      if (!dates.length) { wrap.style.display = 'none'; return; }
+      wrap.style.display = '';
+      const validSet = new Set(dates.map(e => e.date));
+      S.selectedExpirations = S.selectedExpirations.filter(d => validSet.has(d));
+      const RU_MON = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+      let html = '';
+      dates.forEach(e => {
+        const dt = new Date(e.date + 'T00:00:00');
+        const sel = S.selectedExpirations.includes(e.date);
+        let cls = 'exp-chip';
+        if (sel) cls += e.isMonthly ? ' on-g' : ' on-b';
+        else if (e.isMonthly) cls += ' exp-monthly';
+        html += `<div class="${cls}" onclick="toggleExpDate('${e.date}')">` +
+          `<div style="font-size:12px;font-weight:700">${dt.getDate()} ${RU_MON[dt.getMonth()]}</div>` +
+          `<div style="font-size:9px;margin-top:1px;opacity:.65">${e.dte}D${e.isMonthly ? ' · M' : ''}</div>` +
+          `</div>`;
+      });
+      row.innerHTML = html;
+    }
+
+    function toggleExpDate(date) {
+      const idx = S.selectedExpirations.indexOf(date);
+      if (idx >= 0) S.selectedExpirations.splice(idx, 1);
+      else S.selectedExpirations.push(date);
+      updateExpDates();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // DELTA
+    // ═══════════════════════════════════════════════════════
+    function toggleDelta(dp) {
+      const p = dp.dataset.p;
+      const cls = DELTA_CLASS[p];
+      if (dp.classList.contains(cls)) {
+        dp.classList.remove(cls);
+        S.deltaPresets = S.deltaPresets.filter(x => x !== p);
+      } else {
+        dp.classList.add(cls);
+        if (!S.deltaPresets.includes(p)) S.deltaPresets.push(p);
+      }
+    }
+
+    function selectAllDelta() {
+      document.querySelectorAll('.dp').forEach(dp => {
+        const p = dp.dataset.p; const cls = DELTA_CLASS[p];
+        if (cls) dp.classList.add(cls);
+        if (!S.deltaPresets.includes(p)) S.deltaPresets.push(p);
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // SCAN — отправляем v7 payload боту
+    // ═══════════════════════════════════════════════════════
+    function startScan() {
+      const types = [];
+      if (S.put) types.push('PUT');
+      if (S.call) types.push('CALL');
+      if (!types.length) {
+        alert('Выберите хотя бы одну стратегию (PUT или CALL)');
+        return;
+      }
+
+      const payload = {
+        option_types: types,
+        index_filter: S.indexFilter.length ? S.indexFilter : ['sp500'],
+        price_min: S.priceMin,
+        price_max: S.priceMax >= 9000 ? 99999 : S.priceMax,
+        dte: { min: S.minDte, max: S.maxDte },
+        delta_presets: S.deltaPresets.length ? S.deltaPresets : ['mid'],
+      };
+      if (S.selectedExpirations.length > 0) {
+        payload.expiration_dates = [...S.selectedExpirations];
+      }
+
+      if (tg) tg.sendData(JSON.stringify(payload));
+      else alert(JSON.stringify(payload, null, 2));
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════════════
+    document.querySelectorAll('.dp').forEach(dp => {
+      const cls = DELTA_CLASS[dp.dataset.p];
+      if (cls) dp.classList.add(cls);
     });
-    d.setDate(d.getDate() + 7);
-  }
-  return dates;
-}
-
-function updateExpDates() {
-  const dates = computeExpirationDates(S.minDte, S.maxDte);
-  const wrap  = document.getElementById('exp-dates-wrap');
-  const row   = document.getElementById('exp-dates-row');
-  if (!wrap || !row) return;
-  if (!dates.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = '';
-  const validSet = new Set(dates.map(e => e.date));
-  S.selectedExpirations = S.selectedExpirations.filter(d => validSet.has(d));
-  const RU_MON = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
-  let html = '';
-  dates.forEach(e => {
-    const dt  = new Date(e.date + 'T00:00:00');
-    const sel = S.selectedExpirations.includes(e.date);
-    let cls   = 'exp-chip';
-    if (sel)              cls += e.isMonthly ? ' on-g' : ' on-b';
-    else if (e.isMonthly) cls += ' exp-monthly';
-    html += `<div class="${cls}" onclick="toggleExpDate('${e.date}')">` +
-      `<div style="font-size:12px;font-weight:700">${dt.getDate()} ${RU_MON[dt.getMonth()]}</div>` +
-      `<div style="font-size:9px;margin-top:1px;opacity:.65">${e.dte}D${e.isMonthly ? ' · M' : ''}</div>` +
-      `</div>`;
-  });
-  row.innerHTML = html;
-}
-
-function toggleExpDate(date) {
-  const idx = S.selectedExpirations.indexOf(date);
-  if (idx >= 0) S.selectedExpirations.splice(idx, 1);
-  else          S.selectedExpirations.push(date);
-  updateExpDates();
-}
-
-// ═══════════════════════════════════════════════════════
-// DELTA
-// ═══════════════════════════════════════════════════════
-function toggleDelta(dp) {
-  const p   = dp.dataset.p;
-  const cls = DELTA_CLASS[p];
-  if (dp.classList.contains(cls)) {
-    dp.classList.remove(cls);
-    S.deltaPresets = S.deltaPresets.filter(x => x !== p);
-  } else {
-    dp.classList.add(cls);
-    if (!S.deltaPresets.includes(p)) S.deltaPresets.push(p);
-  }
-}
-
-function selectAllDelta() {
-  document.querySelectorAll('.dp').forEach(dp => {
-    const p = dp.dataset.p; const cls = DELTA_CLASS[p];
-    if (cls) dp.classList.add(cls);
-    if (!S.deltaPresets.includes(p)) S.deltaPresets.push(p);
-  });
-}
-
-// ═══════════════════════════════════════════════════════
-// SCAN — отправляем v7 payload боту
-// ═══════════════════════════════════════════════════════
-function startScan() {
-  const types = [];
-  if (S.put)  types.push('PUT');
-  if (S.call) types.push('CALL');
-  if (!types.length) {
-    alert('Выберите хотя бы одну стратегию (PUT или CALL)');
-    return;
-  }
-
-  const payload = {
-    option_types:  types,
-    index_filter:  S.indexFilter.length ? S.indexFilter : ['sp500'],
-    price_min:     S.priceMin,
-    price_max:     S.priceMax >= 9000 ? 99999 : S.priceMax,
-    dte:           { min: S.minDte, max: S.maxDte },
-    delta_presets: S.deltaPresets.length ? S.deltaPresets : ['mid'],
-  };
-  if (S.selectedExpirations.length > 0) {
-    payload.expiration_dates = [...S.selectedExpirations];
-  }
-
-  if (tg) tg.sendData(JSON.stringify(payload));
-  else    alert(JSON.stringify(payload, null, 2));
-}
-
-// ═══════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════
-document.querySelectorAll('.dp').forEach(dp => {
-  const cls = DELTA_CLASS[dp.dataset.p];
-  if (cls) dp.classList.add(cls);
-});
-updateIdxHint();
-setDtePreset('short'); // дефолт = SHORT Term (5–7 DTE, как в config.py)
-</script>
+    updateIdxHint();
+    setDtePreset('short'); // дефолт = SHORT Term (5–7 DTE, как в config.py)
+  </script>
 </body>
+
 </html>
